@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -14,8 +15,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.angryscarf.gamenews.Fragments.NewsFragment;
 import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
 import com.angryscarf.gamenews.Model.Network.Authentication;
@@ -34,14 +37,23 @@ import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        NewsFragment.OnNewsFragmentInteractionListener{
 
     private GameNewsViewModel gameNewsViewModel;
+    private FrameLayout fragContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        fragContainer = findViewById(R.id.main_container_content);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.main_container_content, NewsFragment.newInstance())
+                .commit();
+
 
 
         gameNewsViewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
@@ -66,9 +78,9 @@ public class MainActivity extends AppCompatActivity
                     }
                 });*/
 
-        gameNewsViewModel.getAllnews()
+        /*gameNewsViewModel.getAllnews()
                 .subscribe(news -> Log.d("MAIN", "DEBUG NEWS: "+news.toString()));
-
+*/
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 /*
