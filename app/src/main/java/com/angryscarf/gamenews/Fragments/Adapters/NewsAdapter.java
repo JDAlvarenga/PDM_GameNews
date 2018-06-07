@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,10 +52,35 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 
     @Override
     public void onBindViewHolder(NewsViewHolder holder, int position) {
-//        TODO: Set image of New
-//        holder.image.setImageURI();
-        holder.title.setText(filterEmpty(mDataSet.get(position).getTitle(), "No Title"));
-        holder.description.setText(filterEmpty(mDataSet.get(position).getDescription(), "No Description"));
+
+        New n = mDataSet.get(position);
+        int imageplaceholder;
+        switch (n.getGame()) {
+
+            case "lol":
+                imageplaceholder = R.drawable.cover_default_lol;
+                break;
+
+            case "csgo":
+                imageplaceholder = R.drawable.cover_default_csgo;
+                break;
+
+            case "overwatch":
+                imageplaceholder = R.drawable.cover_default_overwatch;
+                break;
+
+            default:
+                imageplaceholder = R.drawable.cover_default_no_game;
+
+        }
+        Picasso.get()
+                .load(mDataSet.get(position).getCover())
+                .placeholder(imageplaceholder)
+                .fit()
+                .into(holder.image);
+//      TODO: Move text to resources
+        holder.title.setText(filterEmpty(n.getTitle(), "No Title"));
+        holder.description.setText(filterEmpty(n.getDescription(), "No Description"));
     }
 
     @Override
