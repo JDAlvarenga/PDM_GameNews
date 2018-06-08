@@ -22,6 +22,17 @@
             android:src="@drawable/cover_default_no_game"
             />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:orientation="vertical">
+
         <TextView
             android:id="@+id/item_text_title"
             android:layout_width="match_parent"
@@ -41,5 +52,15 @@
 
             android:text="Short description about the new trying not to make it too long to not be able to fit in a few lines"/>
 
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/item_image_favorite"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_favorite"/>
+
+        </LinearLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>

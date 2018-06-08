@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity
                     public void onComplete() {
                        Toast.makeText(MainActivity.this, "Logged in", Toast.LENGTH_LONG).show();
                        Log.d("MAIN", "DEBUG: Logged in");
-
                                            }
                     @Override
                     public void onError(Throwable e) {

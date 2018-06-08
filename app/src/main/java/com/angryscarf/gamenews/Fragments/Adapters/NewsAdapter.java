@@ -2,6 +2,7 @@ package com.angryscarf.gamenews.Fragments.Adapters;
 
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,20 +22,27 @@ import java.util.List;
 
 public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder>{
 
+    private int FAVORITE_ICON = R.drawable.ic_favorite;
+    private int FAVORITE_BORDER_ICON = R.drawable.ic_favorite_border;
+
+
+    private onNewsAdapterInteractionListener mListener;
     private List<New> mDataSet;
 
-    public NewsAdapter(List<New> mDataSet) {
+    public NewsAdapter(onNewsAdapterInteractionListener mListener, List<New> mDataSet) {
+        this.mListener = mListener;
         this.mDataSet = mDataSet != null? mDataSet: new ArrayList<>();
     }
 
     public static class NewsViewHolder extends RecyclerView.ViewHolder {
-        public ImageView image;
+        public ImageView image, favorite;
         public TextView title, description;
 
         public NewsViewHolder(View itemView) {
             super(itemView);
 
             image = itemView.findViewById(R.id.item_image_view);
+            favorite = itemView.findViewById(R.id.item_image_favorite);
             title = itemView.findViewById(R.id.item_text_title);
             description = itemView.findViewById(R.id.item_text_description);
         }
@@ -81,6 +89,16 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 //      TODO: Move text to resources
         holder.title.setText(filterEmpty(n.getTitle(), "No Title"));
         holder.description.setText(filterEmpty(n.getDescription(), "No Description"));
+
+        holder.favorite.setImageResource(n.isFavorite()? FAVORITE_ICON: FAVORITE_BORDER_ICON);
+
+        holder.favorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("DEBUG", "Called listener");
+                mListener.onFavoriteSelected(n);
+            }
+        });
     }
 
     @Override
@@ -94,6 +112,10 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         notifyDataSetChanged();
     }
 
+
+    public interface onNewsAdapterInteractionListener {
+        void onFavoriteSelected(New aNew);
+    }
 
 
     //Helper

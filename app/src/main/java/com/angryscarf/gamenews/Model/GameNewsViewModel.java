@@ -70,6 +70,9 @@ public class GameNewsViewModel extends AndroidViewModel {
     }
 
 
+    public void toggleFavoriteNew(New aNew) {
+        mRepository.updateFavoriteNews(!aNew.isFavorite(), aNew.getId());
+    }
 
 
 }

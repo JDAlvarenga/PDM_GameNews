@@ -28,8 +28,10 @@ public class New {
 
     private String game;
 
+    private boolean favorite;
 
-    public New(@NonNull String id, String title, String cover, String date, String description, String body, String game) {
+
+    public New(@NonNull String id, String title, String cover, String date, String description, String body, String game, boolean favorite) {
         this.id = id;
         this.title = title;
         this.cover = cover;
@@ -37,6 +39,7 @@ public class New {
         this.description = description;
         this.body = body;
         this.game = game;
+        this.favorite = favorite;
     }
 
     @NonNull
@@ -66,5 +69,13 @@ public class New {
 
     public String getGame() {
         return game;
+    }
+
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
     }
 }

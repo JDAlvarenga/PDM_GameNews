@@ -12,8 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.angryscarf.gamenews.Fragments.Adapters.NewsAdapter;
+import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
 import com.angryscarf.gamenews.R;
+
+import io.reactivex.CompletableObserver;
+import io.reactivex.disposables.Disposable;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,7 +27,7 @@ import com.angryscarf.gamenews.R;
  * Use the {@link NewsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NewsFragment extends Fragment {
+public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterInteractionListener{
 
     private OnNewsFragmentInteractionListener mListener;
     private RecyclerView recycler;
@@ -52,9 +56,8 @@ public class NewsFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         viewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
-        adapter = new NewsAdapter(null);
+        adapter = new NewsAdapter(this, null);
         viewModel.getAllnews()
-                .retry()
                 .subscribe(news -> {
             adapter.setDataSet(news);
         });
@@ -105,6 +108,11 @@ public class NewsFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onFavoriteSelected(New aNew) {
+        viewModel.toggleFavoriteNew(aNew);
     }
 
     /**

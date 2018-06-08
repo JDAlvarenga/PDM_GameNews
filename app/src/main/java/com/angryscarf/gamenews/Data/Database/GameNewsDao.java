@@ -44,10 +44,17 @@ public interface GameNewsDao {
     @Query("SELECT * FROM new WHERE id = :nid")
     Single<New> getNewById(String nid);
 
-    @Query("SELECT * FROM new")
+    @Query("SELECT * FROM new ORDER BY date DESC")
     Flowable<List<New>> getAllNewsFlowable();
 
 
     @Query("SELECT * FROM new WHERE game = :gameName")
     Flowable<List<New>> getNewsFlowableByGame(String gameName);
+
+    @Query("UPDATE new SET favorite = :favorite WHERE id IN (:ids)")
+    void updateFavotiteNews(boolean favorite, String... ids);
+
+    @Query("UPDATE new SET favorite = :favorite WHERE id IN (:ids)")
+    void updateFavotiteNews(boolean favorite, List<String> ids);
+
 }

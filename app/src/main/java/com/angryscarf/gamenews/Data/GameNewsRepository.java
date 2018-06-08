@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -63,7 +64,9 @@ public class GameNewsRepository{
     }
 
     public Flowable<List<New>> getAllNewsFlowable() {
-        return  mAllNewsFlowable;
+        return  mAllNewsFlowable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     public Completable saveNews(final New... news) {
@@ -120,7 +123,8 @@ public class GameNewsRepository{
                     New[] news = new New[newAPIS.size()];
                     for (int i = 0; i < newAPIS.size(); i++) {
                         NewAPI newAPI = newAPIS.get(i);
-                        news[i] = new New(newAPI._id, newAPI.title, newAPI.coverImage, newAPI.created_date, newAPI.description, newAPI.body, newAPI.game);
+                        news[i] = new New(newAPI._id, newAPI.title, newAPI.coverImage, newAPI.created_date, newAPI.description, newAPI.body, newAPI.game,
+                                false);
                     }
                     return news;
                 })
@@ -168,6 +172,24 @@ public class GameNewsRepository{
     }
 
 
+    public void updateFavoriteNews(boolean favorite, String... ids) {
+        Completable.fromCallable(() -> {
+            mDao.updateFavotiteNews(favorite, ids);
+            return null;
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+        .subscribe();
+    }
+    public void updateFavoriteNews(boolean favorite, List<String> ids) {
+        Completable.fromCallable(() -> {
+            mDao.updateFavotiteNews(favorite, ids);
+            return null;
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+        .subscribe();
+    }
 
 
     private void createGameNewsAPI() {
