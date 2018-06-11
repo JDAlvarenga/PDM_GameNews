@@ -57,4 +57,7 @@ public interface GameNewsDao {
     @Query("UPDATE new SET favorite = :favorite WHERE id IN (:ids)")
     void updateFavotiteNews(boolean favorite, List<String> ids);
 
+    @Query("SELECT id FROM new WHERE favorite = 1")
+    Flowable<List<String>> getFavoriteNewsId();
+
 }

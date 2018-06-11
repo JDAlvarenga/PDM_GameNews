@@ -47,6 +47,10 @@ public class GameNewsViewModel extends AndroidViewModel {
     public Completable login(String user, String password) {
         Single<String> loginSingle = mRepository.login(user, password);
 
+        if(loginSingle == null) {
+            mRepository.updateAllNews();
+            return Completable.complete();
+        }
         loginSingle.subscribe(new SingleObserver<String>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -55,13 +59,11 @@ public class GameNewsViewModel extends AndroidViewModel {
 
             @Override
             public void onSuccess(String s) {
-                mRepository.updateAllNews();
             }
 
             @Override
             public void onError(Throwable e) {
-                Log.d("VIEW_HOLDER", "ERROR login");
-                e.printStackTrace();
+                Log.d("VIEW_HOLDER", "ERROR login", e);
             }
         });
 

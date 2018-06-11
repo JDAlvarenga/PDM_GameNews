@@ -28,6 +28,7 @@ import org.reactivestreams.Subscription;
 
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.FlowableSubscriber;
 import io.reactivex.SingleObserver;
@@ -58,7 +59,9 @@ public class MainActivity extends AppCompatActivity
 
         gameNewsViewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
 
-        /*gameNewsViewModel.login("00069216", "00069216")
+        Completable loginComplete = gameNewsViewModel.login("00069216", "00069216");
+        if(loginComplete != null){
+            loginComplete
                 .subscribe(new CompletableObserver() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -75,7 +78,8 @@ public class MainActivity extends AppCompatActivity
                         Log.d("onErrorCompletable",e.toString());
                        Toast.makeText(MainActivity.this, "Could not log in "+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
-                });*/
+                });
+        }
 
         /*gameNewsViewModel.getAllnews()
                 .subscribe(news -> Log.d("MAIN", "DEBUG NEWS: "+news.toString()));
