@@ -1,7 +1,9 @@
 package com.angryscarf.gamenews.Network;
 
+import com.angryscarf.gamenews.Model.Data.Player;
 import com.angryscarf.gamenews.Model.Network.Authentication;
 import com.angryscarf.gamenews.Model.Network.NewAPI;
+import com.angryscarf.gamenews.Model.Network.PlayerAPI;
 import com.angryscarf.gamenews.Model.Network.ResponseAddFavorite;
 import com.angryscarf.gamenews.Model.Network.UserAPI;
 import com.google.gson.JsonElement;
@@ -33,6 +35,7 @@ public interface GameNewsAPI {
 
     String ENDPOINT = "https://gamenewsuca.herokuapp.com/";
 
+    //------------USER------------//
 
     @POST("login")
     @FormUrlEncoded
@@ -43,6 +46,9 @@ public interface GameNewsAPI {
     Single<UserAPI> fetchLoggedUserData();
 
 
+
+    //------------NEWS------------//
+
     @GET("news")
     Single<List<NewAPI>> fetchAllNews();
 
@@ -50,14 +56,15 @@ public interface GameNewsAPI {
     @FormUrlEncoded
     Single<ResponseAddFavorite> addNewAsFavorite(@Path("userId") String userId, @Field("new") String newId);
 
-    /*
-    @DELETE("users/{userId}/fav")
-    @FormUrlEncoded
-    Completable removeNewAsFavorite(@Path("userId") String userId, @Field("new") String newId);
-*/
     @FormUrlEncoded
     @HTTP(method = "DELETE", path = "/users/{userId}/fav", hasBody = true)
     Completable removeNewAsFavorite(@Path("userId") String userId, @Field("new") String newId);
+
+    //------------PLAYERS------------//
+
+    @GET("players")
+    Single<List<PlayerAPI>> fetchAllPlayers();
+
 
 
 }

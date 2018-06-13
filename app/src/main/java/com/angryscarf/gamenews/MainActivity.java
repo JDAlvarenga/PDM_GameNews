@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.angryscarf.gamenews.Fragments.NewsFragment;
+import com.angryscarf.gamenews.Fragments.PlayersFragment;
 import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
 import com.angryscarf.gamenews.Model.Network.Authentication;
@@ -39,29 +40,36 @@ import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        NewsFragment.OnNewsFragmentInteractionListener{
+        NewsFragment.OnNewsFragmentInteractionListener,
+        PlayersFragment.OnPlayersFragmentInteractionListener
+{
 
     private GameNewsViewModel gameNewsViewModel;
     private FrameLayout fragContainer;
+
+    private NewsFragment newsFragment;
+    private PlayersFragment playersFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        newsFragment = NewsFragment.newInstance("lol");
+        playersFragment = PlayersFragment.newInstance("lol");
+
         fragContainer = findViewById(R.id.main_container_content);
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.main_container_content, NewsFragment.newInstance())
+                .replace(fragContainer.getId(), newsFragment)
                 .commit();
 
 
 
         gameNewsViewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
 
-        Completable loginComplete = gameNewsViewModel.login("00069216", "00069216");
-        if(loginComplete != null){
-            loginComplete
+        gameNewsViewModel.login("00069216", "00069216")
                 .subscribe(new CompletableObserver() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -79,7 +87,7 @@ public class MainActivity extends AppCompatActivity
                        Toast.makeText(MainActivity.this, "Could not log in "+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-        }
+
 
         /*gameNewsViewModel.getAllnews()
                 .subscribe(news -> Log.d("MAIN", "DEBUG NEWS: "+news.toString()));
@@ -148,8 +156,15 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(fragContainer.getId(), newsFragment)
+                    .commit();
         } else if (id == R.id.nav_gallery) {
-
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(fragContainer.getId(), playersFragment)
+                    .commit();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {

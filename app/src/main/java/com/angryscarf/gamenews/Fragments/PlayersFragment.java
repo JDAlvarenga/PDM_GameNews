@@ -4,16 +4,15 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.angryscarf.gamenews.Fragments.Adapters.NewsAdapter;
-import com.angryscarf.gamenews.Model.Data.New;
+import com.angryscarf.gamenews.Fragments.Adapters.PlayersAdapter;
+import com.angryscarf.gamenews.Model.Data.Player;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
 import com.angryscarf.gamenews.R;
 
@@ -26,28 +25,27 @@ import io.reactivex.disposables.Disposable;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link NewsFragment.OnNewsFragmentInteractionListener} interface
+ * {@link OnPlayersFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link NewsFragment#newInstance} factory method to
+ * Use the {@link PlayersFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterInteractionListener{
-    //the fragment initialization parameters
+public class PlayersFragment extends Fragment implements PlayersAdapter.onPlayersAdapterInteractionListener{
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_GAME = "arg_game";
 
     //State variable keys
     private static final String STATE_GAME = "state_game";
 
-
     private String mGame;
-    private OnNewsFragmentInteractionListener mListener;
+    private OnPlayersFragmentInteractionListener mListener;
     private RecyclerView recycler;
-    private NewsAdapter adapter;
+    private PlayersAdapter adapter;
     private GameNewsViewModel viewModel;
 
     private Disposable currentSub;
 
-    public NewsFragment() {
+    public PlayersFragment() {
         // Required empty public constructor
     }
 
@@ -55,11 +53,11 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param game Game to show
-     * @return A new instance of fragment NewsFragment.
+     * @param game Game to show.
+     * @return A new instance of fragment PlayersFragment.
      */
-    public static NewsFragment newInstance(String game) {
-        NewsFragment fragment = new NewsFragment();
+    public static PlayersFragment newInstance(String game) {
+        PlayersFragment fragment = new PlayersFragment();
         Bundle args = new Bundle();
         args.putString(ARG_GAME, game);
         fragment.setArguments(args);
@@ -78,34 +76,20 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
         }
 
         viewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
-        adapter = new NewsAdapter(this, null);
+        adapter = new PlayersAdapter(this, null);
 
-        setGameNews(mGame);
+        setGamePlayers(mGame);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_news, container, false);
+        View v = inflater.inflate(R.layout.fragment_players, container, false);
 
-        recycler = v.findViewById(R.id.news_recycler);
+        recycler = v.findViewById(R.id.players_recycler);
         recycler.setAdapter(adapter);
-        GridLayoutManager manager = new GridLayoutManager(this.getContext(), 2);
-        manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-
-            @Override
-            public int getSpanSize(int position) {
-                if(position % 3 == 0) {
-                    return 2;
-                }
-                else {
-                    return 1;
-                }
-            }
-        });
-
-        recycler.setLayoutManager(manager);
+        recycler.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
         return v;
     }
@@ -119,11 +103,11 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnNewsFragmentInteractionListener) {
-            mListener = (OnNewsFragmentInteractionListener) context;
+        if (context instanceof OnPlayersFragmentInteractionListener) {
+            mListener = (OnPlayersFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnNewsFragmentInteractionListener");
+                    + " must implement OnPlayersFragmentInteractionListener");
         }
     }
 
@@ -133,47 +117,40 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
         mListener = null;
     }
 
-
-    //News to show
-    public void setGameNews(String game) {
+    //Players to show
+    public void setGamePlayers(String game) {
         mGame = game;
 
         if(currentSub != null) {
             currentSub.dispose();
         }
 
-        Flowable<List<New>> newsList = viewModel.getAllnews();
+        Flowable<List<Player>> playersList = viewModel.getAllplayers();
         if(mGame != null) {
-            //filter news by game
-            newsList = newsList.map(news -> {
-                ArrayList<New> filteredNews = new ArrayList<>();
-                for (New aNew : news) {
-                    if(aNew.getGame().equals(mGame)) {
-                        filteredNews.add(aNew);
+            //filter players by game
+            playersList = playersList.map(players -> {
+                ArrayList filteredPlayers = new ArrayList();
+                for (Player player : players) {
+                    if(player.getGame().equals(mGame)) {
+                        filteredPlayers.add(player);
                     }
                 }
-                return filteredNews;
+                return filteredPlayers;
             });
         }
 
-        currentSub = newsList.subscribe(players -> adapter.setDataSet(players));
-
+        currentSub = playersList.subscribe(players -> adapter.setDataSet(players));
     }
 
 
     //ADAPTER CALLBACKS
 
-    @Override
-    public void onFavoriteSelected(New aNew) {
-        viewModel.toggleFavoriteNew(aNew);
-    }
 
     @Override
-    public void onNewSelected(New aNew) {
-        //TODO: Show selected New (Dialog?)
-        Toast.makeText(this.getContext(), "Selected New: "+aNew.getTitle(), Toast.LENGTH_SHORT).show();
+    public void onPlayerSelected(Player player) {
+        //TODO: Show selected player info (Dialog?)
+        Toast.makeText(this.getContext(), "Selected Player: "+player.getName(), Toast.LENGTH_SHORT).show();
     }
-
 
     /**
      * This interface must be implemented by activities that contain this
@@ -185,7 +162,7 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnNewsFragmentInteractionListener {
+    public interface OnPlayersFragmentInteractionListener {
 
     }
 }

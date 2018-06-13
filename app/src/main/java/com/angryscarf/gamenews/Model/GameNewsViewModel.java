@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.angryscarf.gamenews.Data.GameNewsRepository;
 import com.angryscarf.gamenews.Model.Data.New;
+import com.angryscarf.gamenews.Model.Data.Player;
 import com.angryscarf.gamenews.Model.Network.Authentication;
 import com.angryscarf.gamenews.Model.Network.NewAPI;
 
@@ -27,6 +28,7 @@ public class GameNewsViewModel extends AndroidViewModel {
     private GameNewsRepository mRepository;
 
     private Flowable<List<New>> mAllNews;
+    private Flowable<List<Player>> mAllPlayers;
 
 
 
@@ -35,12 +37,16 @@ public class GameNewsViewModel extends AndroidViewModel {
 
         mRepository = new GameNewsRepository(application);
         mAllNews = mRepository.getAllNewsFlowable();
+        mAllPlayers = mRepository.getAllPlayersFlowable();
 
         
     }
 
     public Flowable<List<New>> getAllnews() {
         return mAllNews;
+    }
+    public Flowable<List<Player>> getAllplayers() {
+        return mAllPlayers;
     }
 
 

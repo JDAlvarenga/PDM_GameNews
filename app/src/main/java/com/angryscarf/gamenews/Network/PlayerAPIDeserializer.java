@@ -20,11 +20,15 @@ public class PlayerAPIDeserializer implements JsonDeserializer {
 
         JsonObject playerObject = json.getAsJsonObject();
 
-        playerAPI._id = playerObject.get("_id").getAsString();
-        playerAPI.avatar = playerObject.get("avatar").getAsString();
-        playerAPI.name = playerObject.get("name").getAsString();
-        playerAPI.bio = playerObject.get("biografia").getAsString();
-        playerAPI.game = playerObject.get("game").getAsString();
+        playerAPI._id = getString(playerObject.get("_id"));
+        playerAPI.avatar = getString(playerObject.get("avatar"));
+        playerAPI.name = getString(playerObject.get("name"));
+        playerAPI.bio = getString(playerObject.get("biografia"));
+        playerAPI.game = getString(playerObject.get("game"));
         return playerAPI;
+    }
+    //Check for null elements
+    private String getString(JsonElement elm) {
+        return elm != null ? elm.getAsString() : null;
     }
 }

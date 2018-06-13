@@ -7,6 +7,7 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 
 import com.angryscarf.gamenews.Model.Data.New;
+import com.angryscarf.gamenews.Model.Data.Player;
 import com.angryscarf.gamenews.Model.Data.User;
 
 import java.util.List;
@@ -38,6 +39,9 @@ public interface GameNewsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertNews(New... news);
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertNews(List<New> news);
+
     @Delete
     void deleteNews(New... news);
 
@@ -60,4 +64,14 @@ public interface GameNewsDao {
     @Query("SELECT id FROM new WHERE favorite = 1")
     Flowable<List<String>> getFavoriteNewsId();
 
+
+    //---Players---
+
+    @Query("SELECT * FROM player")
+    Flowable<List<Player>> getAllPlayersFlowable();
+
+    @Insert
+    void insertPlayers(Player... players);
+    @Insert
+    void insertPlayers(List<Player> players);
 }

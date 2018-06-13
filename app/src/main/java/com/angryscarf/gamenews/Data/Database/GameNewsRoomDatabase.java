@@ -6,6 +6,7 @@ import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
 import com.angryscarf.gamenews.Model.Data.New;
+import com.angryscarf.gamenews.Model.Data.Player;
 import com.angryscarf.gamenews.Model.Data.User;
 import com.angryscarf.gamenews.Model.Data.UserNew;
 
@@ -13,7 +14,7 @@ import com.angryscarf.gamenews.Model.Data.UserNew;
  * Created by Jaime on 6/3/2018.
  */
 
-@Database(entities = {New.class}, version = 1)
+@Database(entities = {New.class, Player.class}, version = 1)
 public abstract class GameNewsRoomDatabase extends RoomDatabase{
 
     private static GameNewsRoomDatabase INSTANCE;

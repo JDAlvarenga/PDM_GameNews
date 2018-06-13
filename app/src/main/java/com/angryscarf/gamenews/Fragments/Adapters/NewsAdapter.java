@@ -41,10 +41,10 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         public NewsViewHolder(View itemView) {
             super(itemView);
 
-            image = itemView.findViewById(R.id.item_image_view);
-            favorite = itemView.findViewById(R.id.item_image_favorite);
-            title = itemView.findViewById(R.id.item_text_title);
-            description = itemView.findViewById(R.id.item_text_description);
+            image = itemView.findViewById(R.id.new_item_image_view);
+            favorite = itemView.findViewById(R.id.new_item_image_favorite);
+            title = itemView.findViewById(R.id.new_item_text_title);
+            description = itemView.findViewById(R.id.new_item_text_description);
         }
     }
 
@@ -52,7 +52,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
     public NewsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         CardView v = (CardView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.recycler_item_new, parent, false);
+                .inflate(R.layout.new_recycler_item, parent, false);
 
         NewsViewHolder holder = new NewsViewHolder(v);
         return holder;
@@ -92,12 +92,13 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 
         holder.favorite.setImageResource(n.isFavorite()? FAVORITE_ICON: FAVORITE_BORDER_ICON);
 
-        holder.favorite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("DEBUG", "Called listener");
-                mListener.onFavoriteSelected(n);
-            }
+        holder.itemView.setOnClickListener(view -> {
+            mListener.onNewSelected(n);
+        });
+
+        holder.favorite.setOnClickListener(view -> {
+            Log.d("DEBUG", "Called listener");
+            mListener.onFavoriteSelected(n);
         });
     }
 
@@ -114,6 +115,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 
 
     public interface onNewsAdapterInteractionListener {
+        void onNewSelected(New aNew);
         void onFavoriteSelected(New aNew);
     }
 

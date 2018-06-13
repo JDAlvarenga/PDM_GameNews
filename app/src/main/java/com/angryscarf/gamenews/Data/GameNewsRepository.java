@@ -11,14 +11,17 @@ import android.util.Log;
 
 import com.angryscarf.gamenews.Data.Database.GameNewsDao;
 import com.angryscarf.gamenews.Data.Database.GameNewsRoomDatabase;
+import com.angryscarf.gamenews.Model.Data.Player;
 import com.angryscarf.gamenews.Model.Network.Authentication;
 import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.Network.NewAPI;
+import com.angryscarf.gamenews.Model.Network.PlayerAPI;
 import com.angryscarf.gamenews.Model.Network.ResponseAddFavorite;
 import com.angryscarf.gamenews.Model.Network.UserAPI;
 import com.angryscarf.gamenews.Network.AuthenticationDeserializer;
 import com.angryscarf.gamenews.Network.GameNewsAPI;
 import com.angryscarf.gamenews.Network.NewAPIDeserializer;
+import com.angryscarf.gamenews.Network.PlayerAPIDeserializer;
 import com.angryscarf.gamenews.Network.ResponseAddFavoriteDeserializer;
 import com.angryscarf.gamenews.Network.RetrofitClient;
 import com.angryscarf.gamenews.Network.UserAPIDeserializer;
@@ -59,6 +62,7 @@ public class GameNewsRepository{
 
     private GameNewsDao mDao;
     private Flowable<List<New>> mAllNewsFlowable;
+    private Flowable<List<Player>> mAllPlayersFlowable;
 
     private GameNewsAPI gameNewsAPI;
 
@@ -80,6 +84,7 @@ public class GameNewsRepository{
         GameNewsRoomDatabase db = GameNewsRoomDatabase.getDatabase(application);
         mDao = db.gameNewsDao();
         mAllNewsFlowable = mDao.getAllNewsFlowable();
+        mAllPlayersFlowable = mDao.getAllPlayersFlowable();
         createGameNewsAPI();
 
         preferences = application.getSharedPreferences(SHARED_PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
@@ -92,11 +97,14 @@ public class GameNewsRepository{
         Log.d("REPO" ,"DEBUG: Loaded from SharedPref: userId = "+userId);
         Log.d("REPO" ,"DEBUG: Loaded from SharedPref: loggedIn = "+loggedIn);
 
+        if(loggedIn) {
+            updateAllNews();
+            updateAllPlayers();
+        }
+
         //load favorites list from database into local variable
         Flowable<List<String>> favs = getFavoriteNewsFlowable()
-                .doOnNext(strings -> {
-                    favoriteNewIds = strings;
-                });
+                .doOnNext(strings -> favoriteNewIds = strings);
         //do it
         favs.subscribe();
         //the first time also sync with the API
@@ -106,6 +114,7 @@ public class GameNewsRepository{
                 .subscribe(strings -> {
                     SyncWithAPI(false);
                 });
+
     }
 
     public Flowable<List<New>> getAllNewsFlowable() {
@@ -114,9 +123,25 @@ public class GameNewsRepository{
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    public Flowable<List<Player>> getAllPlayersFlowable() {
+        return  mAllPlayersFlowable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+
     public Completable saveNews(final New... news) {
         return Completable.fromCallable(() -> {
             mDao.insertNews(news);
+            return null;
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    public Completable savePlayers(final Player... players) {
+        return Completable.fromCallable(() -> {
+            mDao.insertPlayers(players);
             return null;
         })
                 .subscribeOn(Schedulers.io())
@@ -129,7 +154,7 @@ public class GameNewsRepository{
     //get token from API
     public Single<String> login(String user, String password) {
         SyncWithAPI(false);
-        if(loggedIn) return null;
+        if(loggedIn || !isConnected()) return null;
         return gameNewsAPI.login(user, password)
                 //save token on repository
                 .doOnSuccess(authentication -> {
@@ -138,6 +163,7 @@ public class GameNewsRepository{
                     updateAllNews().subscribe(() -> {
                         SyncWithAPI(true);
                     });
+                    updateAllPlayers();
 
                 })
                 .doOnError(throwable -> handleRequestError(throwable))
@@ -179,7 +205,7 @@ public class GameNewsRepository{
 
 
     public Single<UserAPI> fetchLoggedUserData() {
-        if(!loggedIn) return null;
+        if(!loggedIn || !isConnected()) return null;
         return gameNewsAPI.fetchLoggedUserData()
                 .doOnSuccess(userAPI -> {
                     saveUserIdVariable(userAPI._id);
@@ -191,7 +217,7 @@ public class GameNewsRepository{
 
 
     public Completable updateAllNews() {
-        if(!loggedIn) return null;
+        if(!loggedIn || !isConnected()) return null;
         Log.d("REPO", "DEBUG: CALLED updateAllNews");
         Single<List<NewAPI>> APINews =  gameNewsAPI.fetchAllNews()
                 .doOnError(throwable -> handleRequestError(throwable));
@@ -225,13 +251,13 @@ public class GameNewsRepository{
                             @Override
                             public void onComplete() {
                                 //News were saved
-                                Log.d("REPO", "DEBUG: Completed write to database");
+                                Log.d("REPO", "DEBUG: Completed save news to databse");
                             }
 
                             @Override
                             public void onError(Throwable e) {
                                 //News were not saved
-                                Log.d("REPO", "DEBUG: Failed to write to database");
+                                Log.d("REPO", "DEBUG: Failed to save news to database");
 
                             }
                         });
@@ -243,6 +269,62 @@ public class GameNewsRepository{
                     }
                 });
                 return APINews.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .toCompletable();
+    }
+
+    public Completable updateAllPlayers() {
+        if(!loggedIn || !isConnected()) return null;
+        Log.d("REPO", "DEBUG: CALLED updateAllPlayers");
+        Single<List<PlayerAPI>> APIPlayers =  gameNewsAPI.fetchAllPlayers()
+                .doOnError(throwable -> handleRequestError(throwable));
+                //map to array
+                APIPlayers.map(playerAPIS -> {
+                    Player[] players = new Player[playerAPIS.size()];
+                    for (int i = 0; i < playerAPIS.size(); i++) {
+                        PlayerAPI playerAPI = playerAPIS.get(i);
+                        players[i] = new Player(playerAPI._id, playerAPI.name, playerAPI.bio, playerAPI.avatar, playerAPI.game);
+                    }
+                    return players;
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                //pass array to room database
+                .subscribe(new SingleObserver<Player[]>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(Player[] players) {
+
+                        savePlayers(players).subscribe(new CompletableObserver() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                //News were saved
+                                Log.d("REPO", "DEBUG: Completed save players from API");
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                //News were not saved
+                                Log.d("REPO", "DEBUG: Failed to save players from API");
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        handleRequestError(e);
+                    }
+                });
+                return APIPlayers.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .toCompletable();
     }
@@ -284,6 +366,12 @@ public class GameNewsRepository{
 
     public void SyncWithAPI(boolean TruthSourceAPI) {
         Log.d("REPO" ,"DEBUG: Called SyncWithAPI. TruthSourceAPI = "+TruthSourceAPI);
+
+        if(!isConnected()) {
+            Log.d("REPO", "DEBUG: Not connected, stopped sync");
+            return;
+        }
+
         if(token != null) {
             Log.d("REPO" ,"DEBUG: Attempting to sync, token != null");
             /*
@@ -355,6 +443,15 @@ public class GameNewsRepository{
         }
     }
 
+    private boolean isConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return  activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+    }
+
     private void createGameNewsAPI() {
 
         Gson gson = new GsonBuilder()
@@ -362,6 +459,7 @@ public class GameNewsRepository{
                 .registerTypeAdapter(UserAPI.class, new UserAPIDeserializer())
                 .registerTypeAdapter(Authentication.class, new AuthenticationDeserializer())
                 .registerTypeAdapter(NewAPI.class, new NewAPIDeserializer())
+                .registerTypeAdapter(PlayerAPI.class, new PlayerAPIDeserializer())
                 .registerTypeAdapter(ResponseAddFavorite.class, new ResponseAddFavoriteDeserializer())
                 .create();
 
@@ -389,15 +487,6 @@ public class GameNewsRepository{
                 return response;
             }
 
-            private boolean isConnected() {
-                ConnectivityManager cm =
-                        (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                return  activeNetwork != null &&
-                        activeNetwork.isConnectedOrConnecting();
-            }
-
         })
                 .build();
 
@@ -418,3 +507,59 @@ public class GameNewsRepository{
 
 
 }
+
+
+
+/*-----JavaScript Queries-----
+* function getToken(user, password) {
+    let req = new XMLHttpRequest();
+    req.open('POST', 'http://gamenewsuca.herokuapp.com/login', true);
+    req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    req.onreadystatechange = function() {
+        if(this.readyState == 4 && this.status == 200) {
+            window.token = JSON.parse(req.responseText).token;
+            console.log('Saved token');
+        }
+        else if(this.readyState == 4 && this.status != 200){
+            console.log('Could not get token');
+            console.log(req.responseText);
+        }
+    }
+    req.send(`user=${user}&password=${password}`);
+}
+
+function getUser(token) {
+    let req = new XMLHttpRequest();
+    req.open('GET', `http://gamenewsuca.herokuapp.com/users/detail?_=${new Date().getTime()}`, true);
+    req.setRequestHeader('Authorization', `Bearer ${token}`);
+    req.onreadystatechange = function() {
+        if(this.readyState == 4 && this.status == 200) {
+            window.user = JSON.parse(req.responseText);
+            console.log('Fetched user');
+        }
+        else if(this.readyState == 4 && this.status != 200) {
+            console.log('Could not get user details');
+            console.log(req.responseText);
+        }
+    }
+    req.send();
+}
+
+
+function getPlayersList(token) {
+    let req = new XMLHttpRequest();
+    req.open('GET', `http://gamenewsuca.herokuapp.com/players?_=${new Date().getTime()}`, true);
+    req.setRequestHeader('Authorization', `Bearer ${token}`);
+    req.onreadystatechange = function() {
+        if(this.readyState == 4 && this.status == 200) {
+            window.players = JSON.parse(req.responseText);
+            console.log('Fetched players list');
+        }
+        else if(this.readyState == 4 && this.status != 200) {
+            console.log('Could not get players list');
+            console.log(req.responseText);
+        }
+    }
+    req.send();
+}
+* */
