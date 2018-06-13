@@ -3,6 +3,7 @@ package com.angryscarf.gamenews.Fragments;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,12 +35,15 @@ import io.reactivex.disposables.Disposable;
 public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterInteractionListener{
     //the fragment initialization parameters
     private static final String ARG_GAME = "arg_game";
+    private static final String ARG_FAVORITE = "arg_favorite";
 
     //State variable keys
     private static final String STATE_GAME = "state_game";
+    private static final String STATE_FAVORITE = "state_favorite";
 
 
     private String mGame;
+    private boolean favorites;
     private OnNewsFragmentInteractionListener mListener;
     private RecyclerView recycler;
     private NewsAdapter adapter;
@@ -58,10 +62,11 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
      * @param game Game to show
      * @return A new instance of fragment NewsFragment.
      */
-    public static NewsFragment newInstance(String game) {
+    public static NewsFragment newInstance(String game, @NonNull boolean favorites) {
         NewsFragment fragment = new NewsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_GAME, game);
+        args.putBoolean(ARG_FAVORITE, favorites);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,16 +76,18 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mGame = getArguments().getString(ARG_GAME);
+            favorites = getArguments().getBoolean(ARG_FAVORITE);
         }
 
         if (savedInstanceState != null) {
             mGame = savedInstanceState.getString(STATE_GAME);
+            favorites = savedInstanceState.getBoolean(STATE_FAVORITE);
         }
 
         viewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
         adapter = new NewsAdapter(this, null);
 
-        setGameNews(mGame);
+        setGameNews(mGame, favorites);
     }
 
     @Override
@@ -135,7 +142,7 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
 
 
     //News to show
-    public void setGameNews(String game) {
+    public void setGameNews(String game, boolean favorites) {
         mGame = game;
 
         if(currentSub != null) {
@@ -148,13 +155,15 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
             newsList = newsList.map(news -> {
                 ArrayList<New> filteredNews = new ArrayList<>();
                 for (New aNew : news) {
-                    if(aNew.getGame().equals(mGame)) {
+                    if(aNew.getGame().equals(mGame) && (!favorites || aNew.isFavorite()) ) {
+
                         filteredNews.add(aNew);
                     }
                 }
                 return filteredNews;
             });
         }
+
 
         currentSub = newsList.subscribe(players -> adapter.setDataSet(players));
 

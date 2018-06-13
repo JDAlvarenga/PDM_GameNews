@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.angryscarf.gamenews.Fragments.GameFragment;
 import com.angryscarf.gamenews.Fragments.NewsFragment;
 import com.angryscarf.gamenews.Fragments.PlayersFragment;
 import com.angryscarf.gamenews.Model.Data.New;
@@ -40,6 +41,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
+        GameFragment.OnGameFragmentInteractionListener,
         NewsFragment.OnNewsFragmentInteractionListener,
         PlayersFragment.OnPlayersFragmentInteractionListener
 {
@@ -47,8 +49,7 @@ public class MainActivity extends AppCompatActivity
     private GameNewsViewModel gameNewsViewModel;
     private FrameLayout fragContainer;
 
-    private NewsFragment newsFragment;
-    private PlayersFragment playersFragment;
+    private GameFragment gameFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,13 +57,17 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 
-        newsFragment = NewsFragment.newInstance("lol");
-        playersFragment = PlayersFragment.newInstance("lol");
+        if (savedInstanceState == null) {
+            gameFragment = GameFragment.newInstance(null, false);
+        }
+        else {
+            gameFragment = (GameFragment) getSupportFragmentManager().getFragments().get(0);
+        }
 
         fragContainer = findViewById(R.id.main_container_content);
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(fragContainer.getId(), newsFragment)
+                .replace(fragContainer.getId(), gameFragment)
                 .commit();
 
 
@@ -156,23 +161,17 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(fragContainer.getId(), newsFragment)
-                    .commit();
+            gameFragment.filterByGame(null);
         } else if (id == R.id.nav_gallery) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(fragContainer.getId(), playersFragment)
-                    .commit();
+            gameFragment.filterByGame("lol");
         } else if (id == R.id.nav_slideshow) {
-
+            gameFragment.filterByGame("csgo");
         } else if (id == R.id.nav_manage) {
-
+            gameFragment.filterByGame("overwatch");
         } else if (id == R.id.nav_share) {
-
+            gameFragment.filterFavorites(true);
         } else if (id == R.id.nav_send) {
-
+            gameFragment.filterFavorites(false);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -29,12 +29,7 @@ public class UserAPIDeserializer  implements JsonDeserializer<UserAPI>{
         //Extract News id
         JsonArray favorites = userObject.get("favoriteNews").getAsJsonArray();
         for (JsonElement favorite : favorites) {
-            if (favorite != null) {
-                JsonObject obj = favorite.getAsJsonObject();
-                JsonElement id = obj.get("_id");
-                userAPI.favoriteNews.add(favorite.getAsJsonObject().get("_id").getAsString());
-
-            }
+                userAPI.favoriteNews.add(getString(favorite));
         }
 
         userAPI._id = getString(userObject.get("_id"));
