@@ -79,15 +79,8 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
             favorites = getArguments().getBoolean(ARG_FAVORITE);
         }
 
-        if (savedInstanceState != null) {
-            mGame = savedInstanceState.getString(STATE_GAME);
-            favorites = savedInstanceState.getBoolean(STATE_FAVORITE);
-        }
-
         viewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
-        adapter = new NewsAdapter(this, null);
 
-        setGameNews(mGame, favorites);
     }
 
     @Override
@@ -95,6 +88,15 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_news, container, false);
+
+        if (savedInstanceState != null) {
+            mGame = savedInstanceState.getString(STATE_GAME);
+            favorites = savedInstanceState.getBoolean(STATE_FAVORITE);
+        }
+        adapter = new NewsAdapter(this, null);
+
+        setGameNews(mGame, favorites);
+
 
         recycler = v.findViewById(R.id.news_recycler);
         recycler.setAdapter(adapter);
@@ -119,8 +121,9 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString(STATE_GAME, mGame);
         super.onSaveInstanceState(outState);
+        outState.putString(STATE_GAME, mGame);
+        outState.putBoolean(STATE_FAVORITE, favorites);
     }
 
     @Override
@@ -144,6 +147,7 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
     //News to show
     public void setGameNews(String game, boolean favorites) {
         mGame = game;
+        this.favorites = favorites;
 
         if(currentSub != null) {
             currentSub.dispose();
@@ -157,6 +161,17 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
                 for (New aNew : news) {
                     if(aNew.getGame().equals(mGame) && (!favorites || aNew.isFavorite()) ) {
 
+                        filteredNews.add(aNew);
+                    }
+                }
+                return filteredNews;
+            });
+        }
+        else if (favorites) {
+             newsList = newsList.map(news -> {
+                ArrayList<New> filteredNews = new ArrayList<>();
+                for (New aNew : news) {
+                    if(aNew.isFavorite()) {
                         filteredNews.add(aNew);
                     }
                 }

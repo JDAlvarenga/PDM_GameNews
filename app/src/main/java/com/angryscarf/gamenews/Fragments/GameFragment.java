@@ -74,8 +74,16 @@ public class GameFragment extends Fragment
 
         pagerAdapter = new GamePagerAdapter(getChildFragmentManager());
 
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View v = inflater.inflate(R.layout.fragment_game, container, false);
+
         if(savedInstanceState == null) {
-            newsFragment = NewsFragment.newInstance(mGame, false);
+            newsFragment = NewsFragment.newInstance(mGame, favorites);
             playersFragment = PlayersFragment.newInstance(mGame);
         }
         else {
@@ -89,13 +97,7 @@ public class GameFragment extends Fragment
         pagerAdapter.addFragment(newsFragment);
         pagerAdapter.addFragment(playersFragment);
 
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_game, container, false);
 
         viewPager = v.findViewById(R.id.game_view_pager);
         tabLayout = v.findViewById(R.id.game_tab_layout);
@@ -129,6 +131,12 @@ public class GameFragment extends Fragment
         mListener = null;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_GAME,mGame);
+        outState.putBoolean(STATE_FAVORITE, favorites);
+    }
 
     public void filterByGame(String game) {
         this.mGame = game;
