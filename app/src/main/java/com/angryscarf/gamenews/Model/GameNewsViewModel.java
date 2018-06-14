@@ -51,35 +51,20 @@ public class GameNewsViewModel extends AndroidViewModel {
 
 
     public Completable login(String user, String password) {
-        Single<String> loginSingle = mRepository.login(user, password);
+        return mRepository.login(user, password);
+    }
 
-        if(loginSingle == null) {
-            mRepository.updateAllNews();
-            return Completable.complete();
-        }
-        loginSingle.subscribe(new SingleObserver<String>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
-            }
-
-            @Override
-            public void onSuccess(String s) {
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.d("VIEW_HOLDER", "ERROR login", e);
-            }
-        });
-
-        return loginSingle.toCompletable();
-
+    public void logout() {
+        mRepository.logout();
     }
 
 
     public void toggleFavoriteNew(New aNew) {
         mRepository.updateFavoriteNews(!aNew.isFavorite(), aNew.getId());
+    }
+
+    public boolean isLoggedIn() {
+        return mRepository.isLoggedIn();
     }
 
 

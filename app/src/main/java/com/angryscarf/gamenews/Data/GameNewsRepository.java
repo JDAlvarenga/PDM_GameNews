@@ -4,9 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.angryscarf.gamenews.Data.Database.GameNewsDao;
@@ -23,7 +21,6 @@ import com.angryscarf.gamenews.Network.GameNewsAPI;
 import com.angryscarf.gamenews.Network.NewAPIDeserializer;
 import com.angryscarf.gamenews.Network.PlayerAPIDeserializer;
 import com.angryscarf.gamenews.Network.ResponseAddFavoriteDeserializer;
-import com.angryscarf.gamenews.Network.RetrofitClient;
 import com.angryscarf.gamenews.Network.UserAPIDeserializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -41,13 +38,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.BufferedSource;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -57,6 +50,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class GameNewsRepository{
+
+    private static final String NO_CONNECTION_EXCEPTION_MESSAGE = "Failed to connect to network";
 
     private Application application;
 
@@ -140,9 +135,8 @@ public class GameNewsRepository{
     }
 
     public Completable savePlayers(final Player... players) {
-        return Completable.fromCallable(() -> {
+        return Completable.fromAction(() -> {
             mDao.insertPlayers(players);
-            return null;
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
@@ -152,9 +146,11 @@ public class GameNewsRepository{
     //API Interaction
 
     //get token from API
-    public Single<String> login(String user, String password) {
+    public Completable login(String user, String password) {
         SyncWithAPI(false);
-        if(loggedIn || !isConnected()) return null;
+
+        if (loggedIn) return Completable.complete();
+        if (!isConnected()) return Completable.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
         return gameNewsAPI.login(user, password)
                 //save token on repository
                 .doOnSuccess(authentication -> {
@@ -170,7 +166,8 @@ public class GameNewsRepository{
                 //map to return token Single<String> only
                 .map(authentication -> authentication.token)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+                .observeOn(AndroidSchedulers.mainThread())
+                .toCompletable();
     }
 
     public void logout() {
@@ -180,7 +177,7 @@ public class GameNewsRepository{
                 .putBoolean(LOGGED_IN_KEY, false)
         .apply();
         loggedIn = false;
-        SyncWithAPI(false);
+        //SyncWithAPI(false);
     }
 
     private void saveLogInVariable(boolean logged) {
@@ -204,8 +201,9 @@ public class GameNewsRepository{
     }
 
 
-    public Single<UserAPI> fetchLoggedUserData() {
-        if(!loggedIn || !isConnected()) return null;
+    public Single<UserAPI> fetchUserData() {
+        if(!isConnected()) return Single.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
+
         return gameNewsAPI.fetchLoggedUserData()
                 .doOnSuccess(userAPI -> {
                     saveUserIdVariable(userAPI._id);
@@ -378,7 +376,7 @@ public class GameNewsRepository{
             Tries to upload favorite news saved on database to API
             Checks for favorites on database that are not into the API
             */
-            fetchLoggedUserData()
+            fetchUserData()
                     .observeOn(Schedulers.io())
                     .subscribe(userAPI -> {
                         Log.d("REPO" ,"DEBUG: Fetched user data from API");
@@ -452,6 +450,10 @@ public class GameNewsRepository{
                 activeNetwork.isConnectedOrConnecting();
     }
 
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
     private void createGameNewsAPI() {
 
         Gson gson = new GsonBuilder()
@@ -504,7 +506,18 @@ public class GameNewsRepository{
 
     }
 
+    public class NoConnectionException extends Throwable {
 
+        public NoConnectionException(String message) {
+            super(message);
+        }
+    }
+
+    public class NotLoggedInException extends Throwable {
+        public NotLoggedInException(String message) {
+            super(message);
+        }
+    }
 
 }
 

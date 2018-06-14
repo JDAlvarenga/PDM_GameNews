@@ -1,12 +1,10 @@
 package com.angryscarf.gamenews;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -21,23 +19,10 @@ import android.widget.Toast;
 import com.angryscarf.gamenews.Fragments.GameFragment;
 import com.angryscarf.gamenews.Fragments.NewsFragment;
 import com.angryscarf.gamenews.Fragments.PlayersFragment;
-import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
-import com.angryscarf.gamenews.Model.Network.Authentication;
-import com.angryscarf.gamenews.Model.Network.NewAPI;
 
-import org.reactivestreams.Subscription;
-
-import java.util.List;
-
-import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
-import io.reactivex.FlowableSubscriber;
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DisposableSingleObserver;
-import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -74,29 +59,8 @@ public class MainActivity extends AppCompatActivity
 
         gameNewsViewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
 
-        gameNewsViewModel.login("00069216", "00069216")
-                .subscribe(new CompletableObserver() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                       Toast.makeText(MainActivity.this, "Logged in", Toast.LENGTH_LONG).show();
-                       Log.d("MAIN", "DEBUG: Logged in");
-                                           }
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d("onErrorCompletable",e.toString());
-                       Toast.makeText(MainActivity.this, "Could not log in "+e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
 
 
-        /*gameNewsViewModel.getAllnews()
-                .subscribe(news -> Log.d("MAIN", "DEBUG NEWS: "+news.toString()));
-*/
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 /*
@@ -119,6 +83,9 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        navigationView.setCheckedItem(R.id.nav_camera);
+
     }
 
     @Override
@@ -146,7 +113,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_favorites) {
+            if(gameFragment.isFavorites()) {
+                item.setIcon(R.drawable.ic_favorite_border);
+                gameFragment.filterFavorites(false);
+            }
+            else {
+                item.setIcon(R.drawable.ic_favorite);
+                gameFragment.filterFavorites(true);
+            }
             return true;
         }
 
@@ -168,15 +143,21 @@ public class MainActivity extends AppCompatActivity
             gameFragment.filterByGame("csgo");
         } else if (id == R.id.nav_manage) {
             gameFragment.filterByGame("overwatch");
-        } else if (id == R.id.nav_share) {
-            gameFragment.filterFavorites(true);
-        } else if (id == R.id.nav_send) {
-            gameFragment.filterFavorites(false);
+        }
+        else if (id == R.id.nav_logout) {
+            onLogOut();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void onLogOut() {
+        gameNewsViewModel.logout();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 }

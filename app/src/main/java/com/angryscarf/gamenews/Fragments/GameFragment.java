@@ -149,6 +149,9 @@ public class GameFragment extends Fragment
         newsFragment.setGameNews(mGame, fav);
     }
 
+    public boolean isFavorites() {
+        return favorites;
+    }
 
     /**
      * This interface must be implemented by activities that contain this
