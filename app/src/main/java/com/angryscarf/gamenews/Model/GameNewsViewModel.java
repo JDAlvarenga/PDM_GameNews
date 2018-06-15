@@ -68,4 +68,8 @@ public class GameNewsViewModel extends AndroidViewModel {
     }
 
 
+    public Flowable<Boolean> loggedInStatus() {
+        return mRepository.isLoggedInStatus;
+    }
+
 }

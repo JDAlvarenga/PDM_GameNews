@@ -59,6 +59,11 @@ public class MainActivity extends AppCompatActivity
 
         gameNewsViewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
 
+        gameNewsViewModel.loggedInStatus().subscribe(aBoolean -> {
+           if (!aBoolean) {
+               onLogOut();
+           }
+        });
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

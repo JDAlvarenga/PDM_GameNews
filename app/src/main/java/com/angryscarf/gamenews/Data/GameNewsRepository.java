@@ -25,7 +25,11 @@ import com.angryscarf.gamenews.Network.UserAPIDeserializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +45,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import retrofit2.HttpException;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -58,6 +63,8 @@ public class GameNewsRepository{
     private GameNewsDao mDao;
     private Flowable<List<New>> mAllNewsFlowable;
     private Flowable<List<Player>> mAllPlayersFlowable;
+
+    public Flowable<Boolean> isLoggedInStatus;
 
     private GameNewsAPI gameNewsAPI;
 
@@ -110,6 +117,10 @@ public class GameNewsRepository{
                     SyncWithAPI(false);
                 });
 
+        isLoggedInStatus = Flowable.fromCallable(() -> isLoggedIn())
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread());
+
     }
 
     public Flowable<List<New>> getAllNewsFlowable() {
@@ -150,24 +161,31 @@ public class GameNewsRepository{
         SyncWithAPI(false);
 
         if (loggedIn) return Completable.complete();
-        if (!isConnected()) return Completable.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
-        return gameNewsAPI.login(user, password)
-                //save token on repository
-                .doOnSuccess(authentication -> {
-                    saveTokenVariable(authentication.token);
-                    saveLogInVariable(true);
-                    updateAllNews().subscribe(() -> {
-                        SyncWithAPI(true);
-                    });
-                    updateAllPlayers();
 
-                })
-                .doOnError(throwable -> handleRequestError(throwable))
-                //map to return token Single<String> only
-                .map(authentication -> authentication.token)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .toCompletable();
+        return isConnected().flatMapCompletable(aBoolean -> {
+            if (aBoolean) {
+                return gameNewsAPI.login(user, password)
+                        //save token on repository
+                        .doOnSuccess(authentication -> {
+                            saveTokenVariable(authentication.token);
+                            saveLogInVariable(true);
+                            updateAllNews().subscribe(() -> {
+                                SyncWithAPI(true);
+                            });
+                            updateAllPlayers();
+
+                        })
+                        .doOnError(throwable -> handleRequestError(throwable))
+                        //map to return token Single<String> only
+                        .map(authentication -> authentication.token)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .toCompletable();
+            }
+            else {
+                return Completable.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
+            }
+        });
     }
 
     public void logout() {
@@ -185,6 +203,7 @@ public class GameNewsRepository{
         preferences.edit()
                 .putBoolean(LOGGED_IN_KEY, logged)
         .apply();
+
     }
     private void saveTokenVariable(String token) {
         this.token = token;
@@ -201,9 +220,9 @@ public class GameNewsRepository{
     }
 
 
-    public Single<UserAPI> fetchUserData() {
-        if(!isConnected()) return Single.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
 
+//NOTE: this function does not check for connection
+    public Single<UserAPI> fetchUserData() {
         return gameNewsAPI.fetchLoggedUserData()
                 .doOnSuccess(userAPI -> {
                     saveUserIdVariable(userAPI._id);
@@ -215,10 +234,14 @@ public class GameNewsRepository{
 
 
     public Completable updateAllNews() {
-        if(!loggedIn || !isConnected()) return null;
         Log.d("REPO", "DEBUG: CALLED updateAllNews");
-        Single<List<NewAPI>> APINews =  gameNewsAPI.fetchAllNews()
-                .doOnError(throwable -> handleRequestError(throwable));
+        if(!loggedIn) return Completable.error(new NotLoggedInException("Not logged in"));
+
+        return isConnected().flatMapCompletable(aBoolean -> {
+
+            if (aBoolean) {
+                Single<List<NewAPI>> APINews = gameNewsAPI.fetchAllNews()
+                        .doOnError(throwable -> handleRequestError(throwable));
                 //map to array
                 APINews.map(newAPIS -> {
                     New[] news = new New[newAPIS.size()];
@@ -231,100 +254,114 @@ public class GameNewsRepository{
                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                //pass array to room database
-                .subscribe(new SingleObserver<New[]>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(New[] news) {
-
-                        saveNews(news).subscribe(new CompletableObserver() {
+                        //pass array to room database
+                        .subscribe(new SingleObserver<New[]>() {
                             @Override
                             public void onSubscribe(Disposable d) {
+
                             }
 
                             @Override
-                            public void onComplete() {
-                                //News were saved
-                                Log.d("REPO", "DEBUG: Completed save news to databse");
+                            public void onSuccess(New[] news) {
+
+                                saveNews(news).subscribe(new CompletableObserver() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {
+                                    }
+
+                                    @Override
+                                    public void onComplete() {
+                                        //News were saved
+                                        Log.d("REPO", "DEBUG: Completed save news to databse");
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+                                        //News were not saved
+                                        Log.d("REPO", "DEBUG: Failed to save news to database");
+
+                                    }
+                                });
                             }
 
                             @Override
                             public void onError(Throwable e) {
-                                //News were not saved
-                                Log.d("REPO", "DEBUG: Failed to save news to database");
-
+                                handleRequestError(e);
                             }
                         });
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        handleRequestError(e);
-                    }
-                });
                 return APINews.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .toCompletable();
+            }
+            else {
+                return Completable.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
+            }
+        });
     }
 
     public Completable updateAllPlayers() {
-        if(!loggedIn || !isConnected()) return null;
         Log.d("REPO", "DEBUG: CALLED updateAllPlayers");
-        Single<List<PlayerAPI>> APIPlayers =  gameNewsAPI.fetchAllPlayers()
-                .doOnError(throwable -> handleRequestError(throwable));
-                //map to array
-                APIPlayers.map(playerAPIS -> {
-                    Player[] players = new Player[playerAPIS.size()];
-                    for (int i = 0; i < playerAPIS.size(); i++) {
-                        PlayerAPI playerAPI = playerAPIS.get(i);
-                        players[i] = new Player(playerAPI._id, playerAPI.name, playerAPI.bio, playerAPI.avatar, playerAPI.game);
-                    }
-                    return players;
-                })
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                //pass array to room database
-                .subscribe(new SingleObserver<Player[]>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
+        if(!loggedIn) return Completable.error(new NotLoggedInException("Not logged in"));
 
-                    }
-
-                    @Override
-                    public void onSuccess(Player[] players) {
-
-                        savePlayers(players).subscribe(new CompletableObserver() {
+         return isConnected().flatMapCompletable((aBoolean) -> {
+            if (aBoolean) {
+                Single<List<PlayerAPI>> APIPlayers =  gameNewsAPI.fetchAllPlayers()
+                        .doOnError(throwable -> handleRequestError(throwable));
+                        //map to array
+                        APIPlayers.map(playerAPIS -> {
+                            Player[] players = new Player[playerAPIS.size()];
+                            for (int i = 0; i < playerAPIS.size(); i++) {
+                                PlayerAPI playerAPI = playerAPIS.get(i);
+                                players[i] = new Player(playerAPI._id, playerAPI.name, playerAPI.bio, playerAPI.avatar, playerAPI.game);
+                            }
+                            return players;
+                        })
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                        //pass array to room database
+                        .subscribe(new SingleObserver<Player[]>() {
                             @Override
                             public void onSubscribe(Disposable d) {
+
                             }
 
                             @Override
-                            public void onComplete() {
-                                //News were saved
-                                Log.d("REPO", "DEBUG: Completed save players from API");
+                            public void onSuccess(Player[] players) {
+
+                                savePlayers(players).subscribe(new CompletableObserver() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {
+
+
+                                    }
+
+                                    @Override
+                                    public void onComplete() {
+                                        //News were saved
+                                        Log.d("REPO", "DEBUG: Completed save players from API");
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+                                        //News were not saved
+                                        Log.d("REPO", "DEBUG: Failed to save players from API");
+
+                                    }
+                                });
                             }
 
                             @Override
                             public void onError(Throwable e) {
-                                //News were not saved
-                                Log.d("REPO", "DEBUG: Failed to save players from API");
-
+                                handleRequestError(e);
                             }
                         });
-                    }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        handleRequestError(e);
-                    }
-                });
                 return APIPlayers.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .toCompletable();
+            }
+            return Completable.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
+        });
     }
 
 
@@ -365,89 +402,126 @@ public class GameNewsRepository{
     public void SyncWithAPI(boolean TruthSourceAPI) {
         Log.d("REPO" ,"DEBUG: Called SyncWithAPI. TruthSourceAPI = "+TruthSourceAPI);
 
-        if(!isConnected()) {
-            Log.d("REPO", "DEBUG: Not connected, stopped sync");
-            return;
-        }
+        isConnected()
+                .subscribe((aBoolean, throwable) -> {
 
-        if(token != null) {
-            Log.d("REPO" ,"DEBUG: Attempting to sync, token != null");
-            /*
-            Tries to upload favorite news saved on database to API
-            Checks for favorites on database that are not into the API
-            */
-            fetchUserData()
-                    .observeOn(Schedulers.io())
-                    .subscribe(userAPI -> {
-                        Log.d("REPO" ,"DEBUG: Fetched user data from API");
-                        Log.d("REPO" ,"DEBUG: Fetched Favorites: "+userAPI.favoriteNews.size());
-                        Log.d("REPO" ,"DEBUG: Saved Favorites: "+favoriteNewIds.size());
+            if(throwable != null) {
+                handleRequestError(throwable);
+                return;
+            }
+            if (aBoolean != null && aBoolean) {
 
-                        //Favorites in DB that aren't in API
-                        for (String newId : favoriteNewIds) {
-                            if(!userAPI.favoriteNews.contains(newId)) {
-                                Log.d("REPO", "DEBUG: ");
+                if(token != null) {
+                    Log.d("REPO" ,"DEBUG: Attempting to sync, token != null");
+                    /*
+                    Tries to upload favorite news saved on database to API
+                    Checks for favorites on database that are not into the API
+                    */
+                    fetchUserData()
+                            .observeOn(Schedulers.io())
 
-                                if(TruthSourceAPI) {
-                                    //save to DB (remove fav)
-                                    saveFavoriteNews(false, newId)
-                                    .subscribe();
+                            .subscribe((userAPI, errorFetch) -> {
+
+                                if(userAPI == null) {
+                                    Log.d("REPO", "DEBUG: failed to fetch user data, cancelling sync");
+                                    return;
                                 }
-                                else {
-                                    //save to API
-                                    gameNewsAPI.addNewAsFavorite(userId, newId)
-                                            .subscribeOn(Schedulers.io())
-                                            .observeOn(Schedulers.io())
-                                            .doOnError(throwable -> handleRequestError(throwable))
+                                Log.d("REPO" ,"DEBUG: Fetched user data from API");
+                                Log.d("REPO" ,"DEBUG: Fetched Favorites: "+userAPI.favoriteNews.size());
+                                Log.d("REPO" ,"DEBUG: Saved Favorites: "+favoriteNewIds.size());
+
+                                //Favorites in DB that aren't in API
+                                for (String newId : favoriteNewIds) {
+                                    if(!userAPI.favoriteNews.contains(newId)) {
+                                        Log.d("REPO", "DEBUG: ");
+
+                                        if(TruthSourceAPI) {
+                                            //save to DB (remove fav)
+                                            saveFavoriteNews(false, newId)
                                             .subscribe();
+                                        }
+                                        else {
+                                            //save to API
+                                            gameNewsAPI.addNewAsFavorite(userId, newId)
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(Schedulers.io())
+                                                    .doOnError(throwable1 -> handleRequestError(throwable1))
+                                                    .subscribe();
+                                        }
+
+                                    }
                                 }
 
-                            }
-                        }
-
-                       //Favorites in API that are not in DB
-                       for (String newId : userAPI.favoriteNews) {
-                           if(!favoriteNewIds.contains(newId)) {
-                               if(TruthSourceAPI) {
-                                   //save on DB (Add fav)
-                                   saveFavoriteNews(true, newId)
-                                   .subscribe();
-                               }
-                               else {
-                                   //remove from API
-                                   gameNewsAPI.removeNewAsFavorite(userId, newId)
-                                           .subscribeOn(Schedulers.io())
-                                           .observeOn(Schedulers.io())
-                                           .doOnError(throwable -> handleRequestError(throwable))
+                               //Favorites in API that are not in DB
+                               for (String newId : userAPI.favoriteNews) {
+                                   if(!favoriteNewIds.contains(newId)) {
+                                       if(TruthSourceAPI) {
+                                           //save on DB (Add fav)
+                                           saveFavoriteNews(true, newId)
                                            .subscribe();
+                                       }
+                                       else {
+                                           //remove from API
+                                           gameNewsAPI.removeNewAsFavorite(userId, newId)
+                                                   .subscribeOn(Schedulers.io())
+                                                   .observeOn(Schedulers.io())
+                                                   .subscribe();
+                                       }
+                                   }
                                }
-                           }
-                       }
 
-            });
+                    });
 
-        }
+                }
+
+
+            }
+            else {
+                Log.d("REPO", "DEBUG: Not connected, stopped sync");
+            }
+        });
+
 
 
     }
 
-    //TODO: handle No internet connection
     private void handleRequestError(Throwable e) {
-        if(e instanceof IOException) {
-            //No Connectivity
-        }
-        else {
-            Log.e("REPO", "ERROR ON REQUEST: ", e);
+        if (e instanceof NoConnectionException) return;
+        if (e instanceof  NotLoggedInException) return;
+
+        //401 -> Unauthorized
+        if (((HttpException) e).code() == 401) {
+            saveLogInVariable(false);
+            saveTokenVariable(null);
+            saveUserIdVariable(null);
         }
     }
 
-    private boolean isConnected() {
+
+    private Single<Boolean> isConnected() {
         ConnectivityManager cm =
                 (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return  activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
+
+        if (activeNetwork != null && activeNetwork.isConnected()) {
+            Log.d("REPO", "DEBUG: is network connected");
+
+            return Single.fromCallable(() -> {
+                try {
+                    return ! InetAddress.getByName("gamenewsuca.herokuapp.com").equals("");
+                }
+                catch (Exception e) {
+                    return false;
+                }
+
+            })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io());
+        }
+        else {
+            return Single.error(new NoConnectionException(NO_CONNECTION_EXCEPTION_MESSAGE));
+        }
     }
 
     public boolean isLoggedIn() {
