@@ -186,7 +186,6 @@ public class GameNewsRepository{
 
                         })
                         .doOnError(throwable -> handleRequestError(throwable))
-                        //map to return token Single<String> only
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .toCompletable();

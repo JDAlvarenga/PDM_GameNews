@@ -128,10 +128,9 @@ public class NewDetailsFragment extends Fragment {
 
         favorite.setImageResource(selectedNew.isFavorite()? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
 
-        //TODO: move to resources
-        title.setText(Util.filterEmpty(selectedNew.getTitle(), "No title"));
-        description.setText(Util.filterEmpty(selectedNew.getDescription(), ""));
-        body.setText(Util.filterEmpty(selectedNew.getBody(), ""));
+        title.setText(Util.filterEmpty(selectedNew.getTitle(), getString(R.string.default_empty_new_title)));
+        description.setText(Util.filterEmpty(selectedNew.getDescription(), getString(R.string.default_empty_new_description)));
+        body.setText(Util.filterEmpty(selectedNew.getBody(), getString(R.string.default_empty_new_body)));
 
         favorite.setOnClickListener(view -> {
 

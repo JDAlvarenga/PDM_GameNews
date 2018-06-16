@@ -1,5 +1,8 @@
 package com.angryscarf.gamenews.Util;
 
+import android.app.Application;
+import android.content.res.Resources;
+
 import com.angryscarf.gamenews.R;
 
 /**
@@ -26,17 +29,17 @@ public class Util {
                 return R.color.colorGameDefault;
         }
     }
-    //TODO: move to resources
+
     public static String getGameName(String game) {
         switch (game) {
             case "lol":
-                return "League of Legends";
+                return Resources.getSystem().getString(R.string.lol_game_name);
 
             case "csgo":
-                return "CS: Global Offensive";
+                return Resources.getSystem().getString(R.string.csgo_game_name);
 
             case "overwatch":
-                return "Overwatch";
+                return Resources.getSystem().getString(R.string.overwatch_game_name);
 
             default:
                 return "No Game";

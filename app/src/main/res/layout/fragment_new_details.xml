@@ -4,7 +4,7 @@
     tools:context="com.angryscarf.gamenews.Fragments.NewDetailsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:cardBackgroundColor="#aa000000">
+    app:cardBackgroundColor="@color/alphaHideBackground">
 
     <FrameLayout
         android:layout_width="match_parent"

@@ -1,11 +1,26 @@
 <resources>
-    <string name="app_name">GameNews</string>
+    <string name="app_name" translatable="false">GameNews</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="lol_game_name" translatable="false">League of Legends</string>
+    <string name="csgo_game_name" translatable="false">CS:GO</string>
+    <string name="overwatch_game_name" translatable="false">Overwatch</string>
+    <string name="no_connection_message">Is not possible to log in at the moment, please check your internet connection</string>
+    <string name="wrong_credentials_message">Wrong username or password</string>
+    <string name="default_empty_player_name">Unnamed</string>
+    <string name="default_empty_player_bio">No bio was found for the player</string>
+    <string name="default_empty_new_title">Untitled</string>
+    <string name="default_empty_new_description" translatable="false" />
+    <string name="default_empty_new_body" translatable="false" />
+    <string name="login_banner">GameNews</string>
+    <string name="login_sub_banner">Powered by AngryScarf</string>
+    <string name="login_username_hint">Username</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="drawer_all_news">All</string>
+    <string name="drawer_account">Account</string>
+    <string name="drawer_log_out">Log out</string>
 
-    <string name="action_settings">Settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

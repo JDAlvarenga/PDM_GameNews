@@ -92,21 +92,4 @@ public class GameNewsViewModel extends AndroidViewModel {
         this.selectedPlayer = selectedPlayer;
     }
 
-    //TODO: Move to resources
-    public static String getGame(String gameCode) {
-        switch (gameCode) {
-            case "lol":
-                return "League of Legends";
-
-            case "csgo":
-                return "CS: Global Offensive";
-
-            case "overwatch":
-                return "Overwatch";
-
-            default:
-                return "No game";
-
-        }
-    }
 }

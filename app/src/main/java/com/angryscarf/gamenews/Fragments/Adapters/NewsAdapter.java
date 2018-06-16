@@ -94,9 +94,9 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
                 .placeholder(R.drawable.cover_default_no_game)
                 .fit()
                 .into(holder.image);
-//      TODO: Move text to resources
-        holder.title.setText(Util.filterEmpty(n.getTitle(), "No Title"));
-        holder.description.setText(Util.filterEmpty(n.getDescription(), "No Description"));
+
+        holder.title.setText(Util.filterEmpty(n.getTitle(), context.getString(R.string.default_empty_new_title)));
+        holder.description.setText(Util.filterEmpty(n.getDescription(), context.getString(R.string.default_empty_new_description)));
 
         holder.favorite.setImageResource(n.isFavorite()? FAVORITE_ICON: FAVORITE_BORDER_ICON);
 

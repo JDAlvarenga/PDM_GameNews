@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="navigation_drawer_open">Abrir navegación</string>
+    <string name="navigation_drawer_close">Cerrar navegación</string>
+    <string name="no_connection_message">No es posible iniciar sesión por el momento, por favor revisa tu conexión a internet</string>
+    <string name="wrong_credentials_message">El nombre de usuario o contraseña son incorrectos</string>
+    <string name="default_empty_player_name">Sin nombre</string>
+    <string name="default_empty_player_bio">No encontramos una biografía para este jugador</string>
+    <string name="default_empty_new_title">Sin título</string>
+    <string name="login_banner">GameNews</string>
+    <string name="login_sub_banner">Gracias a AngryScarf</string>
+    <string name="login_username_hint">Usuario</string>
+    <string name="login_password_hint">Contraseña</string>
+    <string name="login_button">Iniciar sesión</string>
+    <string name="drawer_all_news">Todas</string>
+    <string name="drawer_account">Cuenta</string>
+    <string name="drawer_log_out">Cerrar sesión</string>
+</resources>

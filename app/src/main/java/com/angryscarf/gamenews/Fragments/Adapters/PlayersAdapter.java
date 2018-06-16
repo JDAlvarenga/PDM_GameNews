@@ -65,8 +65,7 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayersV
 
         Player player = mDataSet.get(position);
 
-        //TODO: move to resources
-        holder.name.setText(Util.filterEmpty(player.getName(), "Unknown player"));
+        holder.name.setText(Util.filterEmpty(player.getName(), context.getString(R.string.default_empty_player_name)));
         holder.game.setText(Util.getGameName(player.getGame()));
 
         Picasso.get()

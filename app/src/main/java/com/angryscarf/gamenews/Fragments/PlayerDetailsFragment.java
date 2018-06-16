@@ -124,10 +124,10 @@ public class PlayerDetailsFragment extends Fragment {
                 .placeholder(R.drawable.avatar_default)
                 .fit()
                 .into(avatar);
-        //TODO: Move to resources
-        name.setText(filterEmpty(selectedPlayer.getName(), "No name"));
-        game.setText(GameNewsViewModel.getGame(selectedPlayer.getGame()));
-        bio.setText(filterEmpty(selectedPlayer.getBio(), "No bio"));
+
+        name.setText(filterEmpty(selectedPlayer.getName(), getString(R.string.default_empty_player_name)));
+        game.setText(Util.getGameName(selectedPlayer.getGame()));
+        bio.setText(filterEmpty(selectedPlayer.getBio(), getString(R.string.default_empty_player_bio)));
 
         gameColor.setBackgroundColor(getResources().getColor(Util.getGameColorID(selectedPlayer.getGame())));
 

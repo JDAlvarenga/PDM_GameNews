@@ -83,13 +83,12 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
-    //TODO: move to resources
     public void onFailedLogIn(Throwable e) {
         if ((e instanceof GameNewsRepository.NoConnectionException)) {
-            Toast.makeText(this, "Is not possible to log in at the moment, please check your internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.no_connection_message, Toast.LENGTH_SHORT).show();
         }
         else if (e instanceof InvalidCredentialsException) {
-            Toast.makeText(this, "Wrong username or password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.wrong_credentials_message, Toast.LENGTH_SHORT).show();
         }
     }
 
