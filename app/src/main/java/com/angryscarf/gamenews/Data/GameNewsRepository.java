@@ -72,12 +72,14 @@ public class GameNewsRepository{
     private static final String SHARED_PREFERENCES_FILE_NAME = "com.angryscarf.gamenews.LAST_USER";
     private static final String TOKEN_KEY = "token";
     private static final String USER_ID_KEY = "user_id";
+    private static final String USERNAME_KEY = "username";
     private static final String LOGGED_IN_KEY = "logged_in";
     private SharedPreferences preferences;
 
 
     private String token;
     private String userId;
+    private String userName;
     private boolean loggedIn;
     private List<String> favoriteNewIds;
 
@@ -103,6 +105,7 @@ public class GameNewsRepository{
 
         token = preferences.getString(TOKEN_KEY,null);
         userId = preferences.getString(USER_ID_KEY,null);
+        userName = preferences.getString(USERNAME_KEY,null);
         loggedIn = preferences.getBoolean(LOGGED_IN_KEY, false);
 
         Log.d("REPO" ,"DEBUG: Loaded from SharedPref: token = "+token);
@@ -179,6 +182,7 @@ public class GameNewsRepository{
                         .doOnSuccess(authentication -> {
                             saveTokenVariable(authentication.token);
                             saveLogInVariable(true);
+                            saveUserNameVariable(user);
                             updateAllNews().subscribe(() -> {
                                 SyncWithAPI(true);
                             });
@@ -200,6 +204,7 @@ public class GameNewsRepository{
         preferences.edit()
                 .putString(TOKEN_KEY, token)
                 .putString(USER_ID_KEY, userId)
+                .putString(USERNAME_KEY, userName)
                 .putBoolean(LOGGED_IN_KEY, false)
         .apply();
         loggedIn = false;
@@ -224,6 +229,12 @@ public class GameNewsRepository{
         this.userId = userId;
         preferences.edit()
                 .putString(USER_ID_KEY, userId)
+        .apply();
+    }
+    private void saveUserNameVariable(String userName) {
+        this.userName = userName;
+        preferences.edit()
+                .putString(USERNAME_KEY, userName)
         .apply();
     }
 
@@ -537,6 +548,10 @@ public class GameNewsRepository{
         return loggedIn;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
     private void createGameNewsAPI() {
 
         Gson gson = new GsonBuilder()
@@ -601,10 +616,8 @@ public class GameNewsRepository{
             super(message);
         }
     }
-    public class InvalidCredentialsException extends Throwable {}
 
 }
-
 
 
 /*-----JavaScript Queries-----

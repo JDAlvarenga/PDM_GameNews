@@ -69,26 +69,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
     public void onBindViewHolder(NewsViewHolder holder, int position) {
 
         New n = mDataSet.get(position);
-        //Dynamic image loading by game (placeholder)
-      /*  int imageplaceholder;
-        switch (n.getGame()) {
 
-            case "lol":
-                imageplaceholder = R.drawable.cover_default_lol;
-                break;
-
-            case "csgo":
-                imageplaceholder = R.drawable.cover_default_csgo;
-                break;
-
-            case "overwatch":
-                imageplaceholder = R.drawable.cover_default_overwatch;
-                break;
-
-            default:
-                imageplaceholder = R.drawable.cover_default_no_game;
-
-        }*/
         Picasso.get()
                 .load(mDataSet.get(position).getCover())
                 .placeholder(R.drawable.cover_default_no_game)

@@ -21,6 +21,7 @@
     <string name="drawer_all_news">All</string>
     <string name="drawer_account">Account</string>
     <string name="drawer_log_out">Log out</string>
+    <string name="unknown_game_name">Unknown</string>
 
 
 </resources>

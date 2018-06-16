@@ -30,10 +30,6 @@ public class GameNewsViewModel extends AndroidViewModel {
     private Flowable<List<New>> mAllNews;
     private Flowable<List<Player>> mAllPlayers;
 
-    private New selectedNew;
-    private Player selectedPlayer;
-
-
 
     public GameNewsViewModel(@NonNull Application application) {
         super(application);
@@ -71,25 +67,13 @@ public class GameNewsViewModel extends AndroidViewModel {
         return mRepository.isLoggedIn();
     }
 
+    public String getLoggedUserName() {
+        return mRepository.getUserName();
+    }
 
     public Flowable<Boolean> loggedInStatus() {
         return mRepository.isLoggedInStatus;
     }
 
-    public New getSelectedNew() {
-        return selectedNew;
-    }
-
-    public void setSelectedNew(New selectedNew) {
-        this.selectedNew = selectedNew;
-    }
-
-    public Player getSelectedPlayer() {
-        return selectedPlayer;
-    }
-
-    public void setSelectedPlayer(Player selectedPlayer) {
-        this.selectedPlayer = selectedPlayer;
-    }
 
 }

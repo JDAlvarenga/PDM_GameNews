@@ -125,9 +125,9 @@ public class PlayerDetailsFragment extends Fragment {
                 .fit()
                 .into(avatar);
 
-        name.setText(filterEmpty(selectedPlayer.getName(), getString(R.string.default_empty_player_name)));
+        name.setText(Util.filterEmpty(selectedPlayer.getName(), getString(R.string.default_empty_player_name)));
         game.setText(Util.getGameName(selectedPlayer.getGame()));
-        bio.setText(filterEmpty(selectedPlayer.getBio(), getString(R.string.default_empty_player_bio)));
+        bio.setText(Util.filterEmpty(selectedPlayer.getBio(), getString(R.string.default_empty_player_bio)));
 
         gameColor.setBackgroundColor(getResources().getColor(Util.getGameColorID(selectedPlayer.getGame())));
 
@@ -144,12 +144,5 @@ public class PlayerDetailsFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnPlayerDetFragmentInteractionListener {
-    }
-
-
-
-    //Helper
-    private String filterEmpty(String text, String def) {
-        return text != null? text: def;
     }
 }

@@ -12,7 +12,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.angryscarf.gamenews.Fragments.GameFragment;
 import com.angryscarf.gamenews.Fragments.NewDetailsFragment;
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity
     private FrameLayout fragContainer;
 
     private GameFragment gameFragment;
+
+    private TextView username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +93,10 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setCheckedItem(R.id.nav_all);
+
+        View header = navigationView.getHeaderView(0);
+        username = header.findViewById(R.id.nav_header_text_username);
+        username.setText(gameNewsViewModel.getLoggedUserName());
 
     }
 
