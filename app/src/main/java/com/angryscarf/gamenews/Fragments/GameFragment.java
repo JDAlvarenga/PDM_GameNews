@@ -106,8 +106,8 @@ public class GameFragment extends Fragment
         viewPager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_menu_camera);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_menu_gallery);
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_games);
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_player);
 
 
         return v;

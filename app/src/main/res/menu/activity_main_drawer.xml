@@ -5,20 +5,20 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
+            android:id="@+id/nav_all"
+            android:icon="@drawable/ic_videogame"
             android:title="All" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
+            android:id="@+id/nav_lol"
+            android:icon="@drawable/ic_lol"
             android:title="League of Legends" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:id="@+id/nav_csgo"
+            android:icon="@drawable/ic_hunt_cross"
             android:title="CS: Global Offensive" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
+            android:id="@+id/nav_overwatch"
+            android:icon="@drawable/ic_overwatch"
             android:title="Overwatch" />
     </group>
 

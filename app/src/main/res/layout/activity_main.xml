@@ -22,7 +22,7 @@
         <FrameLayout
             android:id="@+id/main_container_content"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></FrameLayout>
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
@@ -36,6 +36,7 @@
         android:background="@color/colorBackground"
         app:itemTextColor="@color/colorPrimaryText"
         app:itemIconTint="@color/colorPrimaryText"
-        app:menu="@menu/activity_main_drawer" />
+        app:menu="@menu/activity_main_drawer"
+        android:theme="@style/NavigationDrawerStyle"/>
 
 </android.support.v4.widget.DrawerLayout>

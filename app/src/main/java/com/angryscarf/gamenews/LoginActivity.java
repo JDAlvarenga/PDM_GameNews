@@ -14,6 +14,7 @@ import com.angryscarf.gamenews.Model.GameNewsViewModel;
 
 import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.Disposable;
+import retrofit2.HttpException;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -46,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void logIn(String user, String password) {
+        if (user.isEmpty() || password.isEmpty())  onFailedLogIn(new InvalidCredentialsException());
         viewModel.login(user, password)
         .subscribe(new CompletableObserver() {
             @Override
@@ -60,8 +62,15 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onError(Throwable e) {
-                onFailedLogIn(e);
                 login.setClickable(true);
+                if(e instanceof HttpException) {
+                    if (((HttpException) e).code() == 401) {
+                        onFailedLogIn(new InvalidCredentialsException());
+                    }
+                }
+                else {
+                    onFailedLogIn(e);
+                }
             }
 
         });
@@ -74,10 +83,15 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
+    //TODO: move to resources
     public void onFailedLogIn(Throwable e) {
-        if (!(e instanceof GameNewsRepository.NoConnectionException)) {
-            e.printStackTrace();
+        if ((e instanceof GameNewsRepository.NoConnectionException)) {
+            Toast.makeText(this, "Is not possible to log in at the moment, please check your internet connection", Toast.LENGTH_SHORT).show();
         }
-        Toast.makeText(this, "Is not possible to log in at the moment", Toast.LENGTH_SHORT).show();
+        else if (e instanceof InvalidCredentialsException) {
+            Toast.makeText(this, "Wrong username or password", Toast.LENGTH_SHORT).show();
+        }
     }
+
+    public class InvalidCredentialsException extends Throwable {}
 }

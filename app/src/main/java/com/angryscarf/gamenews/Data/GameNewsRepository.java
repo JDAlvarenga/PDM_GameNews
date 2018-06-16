@@ -187,7 +187,6 @@ public class GameNewsRepository{
                         })
                         .doOnError(throwable -> handleRequestError(throwable))
                         //map to return token Single<String> only
-                        .map(authentication -> authentication.token)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .toCompletable();
@@ -603,6 +602,7 @@ public class GameNewsRepository{
             super(message);
         }
     }
+    public class InvalidCredentialsException extends Throwable {}
 
 }
 

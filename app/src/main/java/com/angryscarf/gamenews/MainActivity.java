@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        navigationView.setCheckedItem(R.id.nav_camera);
+        navigationView.setCheckedItem(R.id.nav_all);
 
     }
 
@@ -111,6 +111,8 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        menu.getItem(0).setIcon(gameFragment.isFavorites()? R.drawable.ic_favorite: R.drawable.ic_favorite_border);
+
         return true;
     }
 
@@ -143,14 +145,14 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_all) {
             // Handle the camera action
             gameFragment.filterByGame(null);
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_lol) {
             gameFragment.filterByGame("lol");
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_csgo) {
             gameFragment.filterByGame("csgo");
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_overwatch) {
             gameFragment.filterByGame("overwatch");
         }
         else if (id == R.id.nav_logout) {
