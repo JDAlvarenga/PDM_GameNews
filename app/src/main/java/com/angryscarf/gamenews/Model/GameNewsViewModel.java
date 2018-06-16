@@ -30,12 +30,15 @@ public class GameNewsViewModel extends AndroidViewModel {
     private Flowable<List<New>> mAllNews;
     private Flowable<List<Player>> mAllPlayers;
 
+    private New selectedNew;
+    private Player selectedPlayer;
+
 
 
     public GameNewsViewModel(@NonNull Application application) {
         super(application);
 
-        mRepository = new GameNewsRepository(application);
+        mRepository = GameNewsRepository.getInstance(application);
         mAllNews = mRepository.getAllNewsFlowable();
         mAllPlayers = mRepository.getAllPlayersFlowable();
 
@@ -60,7 +63,8 @@ public class GameNewsViewModel extends AndroidViewModel {
 
 
     public void toggleFavoriteNew(New aNew) {
-        mRepository.updateFavoriteNews(!aNew.isFavorite(), aNew.getId());
+        aNew.setFavorite(!aNew.isFavorite());
+        mRepository.updateFavoriteNews(aNew.isFavorite(), aNew.getId());
     }
 
     public boolean isLoggedIn() {
@@ -72,4 +76,37 @@ public class GameNewsViewModel extends AndroidViewModel {
         return mRepository.isLoggedInStatus;
     }
 
+    public New getSelectedNew() {
+        return selectedNew;
+    }
+
+    public void setSelectedNew(New selectedNew) {
+        this.selectedNew = selectedNew;
+    }
+
+    public Player getSelectedPlayer() {
+        return selectedPlayer;
+    }
+
+    public void setSelectedPlayer(Player selectedPlayer) {
+        this.selectedPlayer = selectedPlayer;
+    }
+
+    //TODO: Move to resources
+    public static String getGame(String gameCode) {
+        switch (gameCode) {
+            case "lol":
+                return "League of Legends";
+
+            case "csgo":
+                return "CS: Global Offensive";
+
+            case "overwatch":
+                return "Overwatch";
+
+            default:
+                return "No game";
+
+        }
+    }
 }

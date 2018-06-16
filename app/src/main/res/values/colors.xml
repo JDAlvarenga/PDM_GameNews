@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <!--<color name="colorPrimary">#3F51B5</color>-->
+    <!--<color name="colorPrimaryDark">#303F9F</color>-->
+    <!--<color name="colorAccent">#FF4081</color>-->
+
+    <color name="colorPrimary">#455a64</color>
+    <color name="colorPrimaryLight">#718792</color>
+    <color name="colorPrimaryDark">#1c313a</color>
+
+    <color name="colorSecondary">#ffa000</color>
+    <color name="colorSecondaryLight">#ffd149</color>
+    <color name="colorSecondaryDark">#c67100</color>
+
+    <color name="colorPrimaryText">#ffffff</color>
+    <color name="colorPrimaryLightText">#000000</color>
+    <color name="colorSecondaryText">#000000</color>
+
+    <color name="colorBackground">#323232</color>
+    <color name="colorBackgroundLight">#6d6d6d</color>
+    <color name="colorBackgroundDark">#1b1b1b</color>
+
+    <color name="colorGameLoL">#d32f2f</color>
+    <color name="colorGameCSGO">#ffa000</color>
+    <color name="colorGameOW">#303f9f</color>
+    <color name="colorGameDefault">#afb42b</color>
+
+
+
+
 </resources>

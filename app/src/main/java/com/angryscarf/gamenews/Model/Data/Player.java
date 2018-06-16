@@ -4,12 +4,14 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+import java.io.Serializable;
+
 /**
  * Created by Jaime on 6/11/2018.
  */
 
 @Entity
-public class Player {
+public class Player implements Serializable{
     @NonNull
     @PrimaryKey
     private String id;

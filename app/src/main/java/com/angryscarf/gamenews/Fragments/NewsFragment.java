@@ -2,9 +2,12 @@ package com.angryscarf.gamenews.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,6 +19,7 @@ import android.widget.Toast;
 import com.angryscarf.gamenews.Fragments.Adapters.NewsAdapter;
 import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
+import com.angryscarf.gamenews.NewDetailsActivity;
 import com.angryscarf.gamenews.R;
 
 import java.util.ArrayList;
@@ -42,14 +46,22 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
     private static final String STATE_FAVORITE = "state_favorite";
 
 
+    //Fragment details tags
+    private static final String DETAILS_FRAGMENT_TAG = "details_fragment_tag";
+    private static final String DETAILS_FRAGMENT_BACK_STACK = "details_fragment_back_stack";
+
     private String mGame;
     private boolean favorites;
     private OnNewsFragmentInteractionListener mListener;
+    private View container;
     private RecyclerView recycler;
     private NewsAdapter adapter;
     private GameNewsViewModel viewModel;
 
     private Disposable currentSub;
+
+
+
 
     public NewsFragment() {
         // Required empty public constructor
@@ -93,11 +105,12 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
             mGame = savedInstanceState.getString(STATE_GAME);
             favorites = savedInstanceState.getBoolean(STATE_FAVORITE);
         }
-        adapter = new NewsAdapter(this, null);
+        adapter = new NewsAdapter(getContext(), this, null);
 
         setGameNews(mGame, favorites);
 
 
+        container = v.findViewById(R.id.news_container);
         recycler = v.findViewById(R.id.news_recycler);
         recycler.setAdapter(adapter);
         GridLayoutManager manager = new GridLayoutManager(this.getContext(), 2);
@@ -194,9 +207,22 @@ public class NewsFragment extends Fragment implements NewsAdapter.onNewsAdapterI
 
     @Override
     public void onNewSelected(New aNew) {
-        //TODO: Show selected New (Dialog?)
-        Toast.makeText(this.getContext(), "Selected New: "+aNew.getTitle(), Toast.LENGTH_SHORT).show();
+
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        if (fm.findFragmentByTag(DETAILS_FRAGMENT_TAG) != null) {
+            fm.popBackStack(DETAILS_FRAGMENT_BACK_STACK, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        fm.beginTransaction()
+                .add(R.id.news_container, NewDetailsFragment.newInstance(aNew), DETAILS_FRAGMENT_TAG)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
+                //.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                .addToBackStack(DETAILS_FRAGMENT_BACK_STACK)
+                .commit();
+
     }
+
+
 
 
     /**

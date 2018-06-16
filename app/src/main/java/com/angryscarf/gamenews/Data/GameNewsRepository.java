@@ -10,6 +10,7 @@ import android.util.Log;
 import com.angryscarf.gamenews.Data.Database.GameNewsDao;
 import com.angryscarf.gamenews.Data.Database.GameNewsRoomDatabase;
 import com.angryscarf.gamenews.Model.Data.Player;
+import com.angryscarf.gamenews.Model.GameNewsViewModel;
 import com.angryscarf.gamenews.Model.Network.Authentication;
 import com.angryscarf.gamenews.Model.Data.New;
 import com.angryscarf.gamenews.Model.Network.NewAPI;
@@ -81,7 +82,16 @@ public class GameNewsRepository{
     private List<String> favoriteNewIds;
 
 
-    public GameNewsRepository(Application application) {
+    private static GameNewsRepository INSTANCE;
+
+    public static GameNewsRepository getInstance(Application application) {
+        if (INSTANCE == null) {
+            INSTANCE = new GameNewsRepository(application);
+        }
+        return INSTANCE;
+    }
+
+    private GameNewsRepository(Application application) {
         this.application = application;
         GameNewsRoomDatabase db = GameNewsRoomDatabase.getDatabase(application);
         mDao = db.gameNewsDao();
@@ -491,6 +501,7 @@ public class GameNewsRepository{
 
         //401 -> Unauthorized
         if (((HttpException) e).code() == 401) {
+            Log.d("REPO", "DEBUG: Unauthorized, token expired");
             saveLogInVariable(false);
             saveTokenVariable(null);
             saveUserIdVariable(null);

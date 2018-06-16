@@ -4,12 +4,14 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+import java.io.Serializable;
+
 /**
  * Created by Jaime on 6/3/2018.
  */
 
 @Entity
-public class New {
+public class New implements Serializable{
 
     @PrimaryKey
     @NonNull

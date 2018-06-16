@@ -4,6 +4,8 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -37,8 +39,14 @@ public class PlayersFragment extends Fragment implements PlayersAdapter.onPlayer
     //State variable keys
     private static final String STATE_GAME = "state_game";
 
+    //Fragment details tags
+    private static final String DETAILS_FRAGMENT_TAG = "details_fragment_tag";
+    private static final String DETAILS_FRAGMENT_BACK_STACK = "details_fragment_back_stack";
+
+
     private String mGame;
     private OnPlayersFragmentInteractionListener mListener;
+    private View container;
     private RecyclerView recycler;
     private PlayersAdapter adapter;
     private GameNewsViewModel viewModel;
@@ -76,7 +84,7 @@ public class PlayersFragment extends Fragment implements PlayersAdapter.onPlayer
         }
 
         viewModel = ViewModelProviders.of(this).get(GameNewsViewModel.class);
-        adapter = new PlayersAdapter(this, null);
+        adapter = new PlayersAdapter(getContext(), this, null);
 
         setGamePlayers(mGame);
     }
@@ -87,6 +95,7 @@ public class PlayersFragment extends Fragment implements PlayersAdapter.onPlayer
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_players, container, false);
 
+        container = v.findViewById(R.id.players_container);
         recycler = v.findViewById(R.id.players_recycler);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(this.getContext()));
@@ -148,8 +157,17 @@ public class PlayersFragment extends Fragment implements PlayersAdapter.onPlayer
 
     @Override
     public void onPlayerSelected(Player player) {
-        //TODO: Show selected player info (Dialog?)
-        Toast.makeText(this.getContext(), "Selected Player: "+player.getName(), Toast.LENGTH_SHORT).show();
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        if (fm.findFragmentByTag(DETAILS_FRAGMENT_TAG) != null) {
+            fm.popBackStack(DETAILS_FRAGMENT_BACK_STACK, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        fm.beginTransaction()
+                .add(R.id.players_container, PlayerDetailsFragment.newInstance(player), DETAILS_FRAGMENT_TAG)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
+                //.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+                .addToBackStack(DETAILS_FRAGMENT_BACK_STACK)
+                .commit();
     }
 
     /**

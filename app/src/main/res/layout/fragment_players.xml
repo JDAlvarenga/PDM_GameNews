@@ -1,9 +1,18 @@
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/players_recycler"
+    android:id="@+id/players_container"
+    tools:context="com.angryscarf.gamenews.Fragments.PlayersFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.angryscarf.gamenews.Fragments.PlayersFragment">
+    android:background="@color/colorBackgroundDark"
+    >
 
 
-</android.support.v7.widget.RecyclerView>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/players_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </android.support.v7.widget.RecyclerView>
+
+</FrameLayout>

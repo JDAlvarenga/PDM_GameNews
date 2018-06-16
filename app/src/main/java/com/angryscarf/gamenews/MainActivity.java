@@ -4,7 +4,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -14,21 +13,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.angryscarf.gamenews.Fragments.GameFragment;
+import com.angryscarf.gamenews.Fragments.NewDetailsFragment;
 import com.angryscarf.gamenews.Fragments.NewsFragment;
+import com.angryscarf.gamenews.Fragments.PlayerDetailsFragment;
 import com.angryscarf.gamenews.Fragments.PlayersFragment;
 import com.angryscarf.gamenews.Model.GameNewsViewModel;
-
-import io.reactivex.CompletableObserver;
-import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         GameFragment.OnGameFragmentInteractionListener,
         NewsFragment.OnNewsFragmentInteractionListener,
-        PlayersFragment.OnPlayersFragmentInteractionListener
+        PlayersFragment.OnPlayersFragmentInteractionListener,
+        NewDetailsFragment.OnNewDetFragmentInteractionListener,
+        PlayerDetailsFragment.OnPlayerDetFragmentInteractionListener
 {
 
     private GameNewsViewModel gameNewsViewModel;
@@ -99,7 +98,12 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                super.onBackPressed();
+            }
+            else {
+                getSupportFragmentManager().popBackStack();
+            }
         }
     }
 
